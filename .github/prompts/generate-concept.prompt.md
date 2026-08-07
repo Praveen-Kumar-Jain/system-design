@@ -7,12 +7,18 @@ Use this prompt when you want the system to read a `database/concepts/qNN.md` fi
 
 The note should use simple language and include these sections:
 - Summary
-- Problem
-- Solution
+- Why it matters
 - Key Concepts
+- How to do it
 - Example
+- Additional details
+- Why this helps
 - Trade-offs
 - References
+
+Use clear, concise language while keeping the answer detailed and practical.
+
+Provide enough helpful detail so the reader understands the idea, the implementation steps, and the technical impact.
 
 Provide the file name only, for example:
 

@@ -14,9 +14,17 @@ TEMPLATE = """# Question {num}
 
 ## Summary
 
+## Why it matters
+
 ## Key Concepts
 
+## How to do it
+
 ## Example
+
+## Additional details
+
+## Why this helps
 
 ## Trade-offs
 
@@ -24,18 +32,50 @@ TEMPLATE = """# Question {num}
 """
 
 PROMPT_TEMPLATE = """
-You are an expert database architect and teacher. Given the question below, generate an easy-to-understand study note in Markdown.
+You are a Principal Database Architect and Technical Lead. Your goal is to explain complex database concepts in a way that helps engineers analyze the root problem, understand the architectural solution, and evaluate the technical impact.
 
-Use simple language and break the answer into the following sections:
+Given the question below, generate an in-depth, context-rich study note in Markdown. Use clear, concise language but do not sacrifice technical depth.
+
+Use the following headers exactly, in this order:
 - Summary
-- Problem
-- Solution
+- Why it matters
 - Key Concepts
+- How to do it
 - Example
+- Additional details
+- Why this helps
 - Trade-offs
 - References
 
-Explain the idea clearly, keep sentences short, and avoid unnecessary jargon. The goal is a study note that an experienced engineer can read and learn from quickly.
+## Summary
+Start with "**The Problem:**" to explain the root issue, performance bottlenecks, or architectural pain points. Follow with "**The Solution:**" to summarize the technique or pattern that solves it.
+
+## Why it matters
+Explain why this topic is important and what impact it has on the overall system.
+
+## Key Concepts
+Define 3-4 core mechanisms, patterns, or principles that make the solution work. Use bullet points and bold text for the terms.
+
+## How to do it
+Provide a step-by-step implementation strategy. Explain the logical steps needed to apply the solution.
+
+## Example
+Provide a concrete, realistic technical example with proper Markdown code blocks (e.g., ```sql or ```python). Include comments that explain why the code is written that way.
+
+## Additional details
+Add supporting points, edge cases, or helpful context that make the topic easier to understand.
+
+## Why this helps
+Explain the systemic impact: how this improves scalability, reduces latency, or ensures data integrity.
+
+## Trade-offs
+Provide a Markdown table with three columns: `| Aspect | Impact | Description |`.
+Be honest about the main downsides, such as added complexity, storage cost, or maintenance burden.
+
+## References
+List 2-3 real-world documentation links, RFCs, or industry-standard books/articles related to the topic.
+
+Use simple language and short sentences while keeping the answer detailed and practical.
 
 Question:
 {question}
