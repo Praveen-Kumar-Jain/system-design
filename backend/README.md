@@ -14,3 +14,11 @@ Use this folder to document server-side concepts such as:
 - API design
 - Data flow
 - Failure cases and monitoring
+
+## File naming convention
+Use descriptive filenames that reflect the topic rather than numeric identifiers. For example:
+- `threadpoolstarvation.md`
+- `expressgracefulshutdown.md`
+- `jwtrefreshrotation.md`
+
+This keeps the backend concepts folder easier to browse and avoids numeric ambiguity.
