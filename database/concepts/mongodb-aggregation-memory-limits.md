@@ -1,4 +1,4 @@
-# Question 52
+# MongoDB aggregation pipeline
 
 What strategies do you use to prevent MongoDB aggregation pipelines from exceeding the 100MB RAM limit per pipeline stage?
 

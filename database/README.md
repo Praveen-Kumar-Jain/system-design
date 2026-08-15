@@ -1,4 +1,4 @@
-# Database Learning Notes
+﻿# Database Learning Notes
 
 Use this folder to document data-layer concepts such as:
 - Schema design
@@ -14,3 +14,11 @@ Use this folder to document data-layer concepts such as:
 - Storage choice
 - Indexing strategy
 - Trade-offs
+
+## File naming convention
+Use descriptive filenames that reflect the topic instead of numeric identifiers. For example:
+- `highfrequencymultitenanttransactioninserts.md`
+- `jsonbindexingimplications.md`
+- `pointintimebalances.md`
+
+This keeps database concept notes easier to browse and reduces ambiguity.

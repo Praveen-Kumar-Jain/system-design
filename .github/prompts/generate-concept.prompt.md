@@ -3,7 +3,7 @@ name: Generate Database Concept Note
 summary: Generate an in-depth concept note for a database question file in database/concepts.
 ---
 
-Use this prompt when you want the system to read a `database/concepts/qNN.md` file, extract the exact question, and write a clear study note.
+Use this prompt when you want the system to read a descriptive Markdown file in `database/concepts`, extract the exact question, and write a clear study note.
 
 The note should use simple language and include these sections:
 - Summary
@@ -22,5 +22,5 @@ Provide enough helpful detail so the reader understands the idea, the implementa
 
 Provide the file name only, for example:
 
-- `q1.md`
-- `q51`
+- `postgresql-row-level-security.md`
+- `mongodb-change-stream-webhooks`

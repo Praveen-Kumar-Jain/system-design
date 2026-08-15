@@ -186,7 +186,7 @@ def ensure_markdown(filename):
 
 def main():
     parser = argparse.ArgumentParser(description="Generate detailed concept notes for a question file.")
-    parser.add_argument("file", help="The question file name or number, e.g. q1 or q1.md")
+    parser.add_argument("file", help="The descriptive question file name, e.g. postgresql-row-level-security or postgresql-row-level-security.md")
     parser.add_argument("--model", default="gpt-4o-mini", help="OpenAI model to use")
     parser.add_argument("--force", action="store_true", help="Overwrite existing sections")
     args = parser.parse_args()
