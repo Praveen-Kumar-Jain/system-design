@@ -23,7 +23,7 @@ flowchart TD
     D --> G["Provide via React Context"]
     F --> G
     G --> H["Server Component renders\nlocalized HTML (SEO)"]
-    H --> I(["Client Components call\nt(\"welcome\") → Bienvenue"])
+    H --> I(["Client Components call\nt('welcome') renders Bienvenue"])
 
     I --> J(["User switches to English"])
     J --> K{{"en.json\nalready cached?"}}
