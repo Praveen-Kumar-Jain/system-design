@@ -10,6 +10,34 @@ How do you design a robust frontend caching layer that automatically and selecti
 ## Why it matters
 Real-time apps like Slack, Notion, or TradingView need both low network overhead and up-to-date UI. A cache with no invalidation strategy goes stale; a cache invalidated wholesale on every event causes redundant refetches, wasted bandwidth, and flicker in components that didn't actually change. Selective invalidation, driven by well-defined event types and stable query keys, gets both correctness and performance.
 
+## Flowchart
+```mermaid
+flowchart TD
+    A(["Page loads"]) --> B["REST fetch\nGET /projects"]
+    B --> C["Store in cache\n(React Query / SWR)"]
+    C --> D(["Components read\nfrom cache"])
+
+    E(["Server pushes\nWebSocket event"]) --> F["{ type: TASK_UPDATED,\ntaskId, task? }"]
+    F --> G{{"Payload small\n& trustworthy?"}}
+
+    G -- "Yes" --> H["setQueryData(key, payload)\ndirect cache write"]
+    G -- "No / relational" --> I["invalidateQueries(key)"]
+    I --> J["Refetch from server"]
+
+    H --> K(["Only matching\ncomponents re-render"])
+    J --> K
+
+    classDef entry fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e;
+    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#713f12;
+    classDef action fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#1e293b;
+    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+
+    class A,E entry;
+    class G decision;
+    class B,C,F,H,I,J action;
+    class D,K success;
+```
+
 ## Key Concepts
 - **Cache keys:** predictable, hierarchical keys (`["project", id]`, `["tasks", projectId]`) that let a single event target exactly the affected query.
 - **Selective invalidation:** only the queries named by the event refetch; everything else stays cached untouched.

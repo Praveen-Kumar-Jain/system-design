@@ -10,6 +10,37 @@ What is the most efficient architectural approach to internationalize (i18n) a N
 ## Why it matters
 Internationalization done well is invisible: components never know which language is active, they only ask for a key. Loading all locales eagerly (e.g., 5 languages × 5 MB) multiplies bundle size for no benefit, since a given user only ever needs one. Route-based locale detection also keeps localized pages crawlable and cacheable, which matters for SEO in a way that a language toggle stored only in client state does not.
 
+## Flowchart
+```mermaid
+flowchart TD
+    A(["User visits /fr"]) --> B["Next.js reads locale\nfrom route param"]
+    B --> C{{"Dictionary already\ncached in memory?"}}
+
+    C -- "Yes" --> D["Read cached dictionary"]
+    C -- "No" --> E["Dynamic import\nmessages/fr/common.json"]
+    E --> F["Cache dictionary"]
+
+    D --> G["Provide via React Context"]
+    F --> G
+    G --> H["Server Component renders\nlocalized HTML (SEO)"]
+    H --> I(["Client Components call\nt(\"welcome\") → Bienvenue"])
+
+    I --> J(["User switches to English"])
+    J --> K{{"en.json\nalready cached?"}}
+    K -- "Yes" --> L(["Instant re-render,\nno network request"])
+    K -- "No" --> E
+
+    classDef entry fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e;
+    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#713f12;
+    classDef action fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#1e293b;
+    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+
+    class A,J entry;
+    class C,K decision;
+    class B,D,E,F,G,H action;
+    class I,L success;
+```
+
 ## Key Concepts
 - **Translation keys:** components call `t("welcome")` instead of embedding literal text, so no component changes when a language is added.
 - **Per-locale dictionaries:** JSON files with identical keys and translated values, organized into namespaces (`common.json`, `checkout.json`) so pages load only what they need.

@@ -10,6 +10,35 @@ What specific CSS containment properties optimize rendering performance for exce
 ## Why it matters
 Without containment hints, the browser must assume any DOM node could affect ancestor/sibling layout (e.g., via floats, margin collapsing, or size changes propagating up), so it conservatively re-lays-out far more of the tree than actually changed. On DOM subtrees with thousands of nodes (data grids, chat logs, dashboards), this turns cheap-looking updates into expensive full-tree layout/paint passes, causing dropped frames and jank.
 
+## Flowchart
+```mermaid
+flowchart TD
+    A(["Style change\ninside one row"]) --> B{{"Row has\ncontain: layout paint?"}}
+
+    B -- "No" --> C["Browser assumes whole\ntree may be affected"]
+    C --> D["Recalculate style/layout\nfor entire page"]
+    D --> E(["Dropped frames / jank"])
+
+    B -- "Yes" --> F["Browser proves change\nis isolated to this row"]
+    F --> G["Recalculate layout/paint\nfor that row only"]
+    G --> H{{"Section is\noff-screen?"}}
+
+    H -- "Yes, content-visibility: auto" --> I(["Skip render entirely\nuntil scrolled into view"])
+    H -- "No" --> J(["Smooth scroll,\nstable frame budget"])
+
+    classDef entry fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e;
+    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#713f12;
+    classDef action fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#1e293b;
+    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+    classDef danger fill:#fee2e2,stroke:#dc2626,stroke-width:1.5px,color:#7f1d1d;
+
+    class A entry;
+    class B,H decision;
+    class C,D,F,G action;
+    class I,J success;
+    class E danger;
+```
+
 ## Key Concepts
 - **`contain: layout`:** the element's internal layout doesn't affect, and isn't affected by, anything outside it — enables local layout recalculation instead of global.
 - **`contain: paint`:** clips descendant paint to the element's bounds and guarantees nothing outside it needs repainting because of changes inside — also establishes it as a containing block.

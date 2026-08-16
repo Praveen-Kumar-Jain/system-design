@@ -10,6 +10,38 @@ How do you optimize the Largest Contentful Paint (LCP) metric when the primary h
 ## Why it matters
 LCP measures when the largest visible content element finishes rendering, and for a chart-as-hero page, the chart *is* the LCP candidate. Any client-only rendering pipeline — bundle download, hydration, data fetch, chart library initialization, draw — all sits on the critical path before the LCP timestamp can fire. This is one of the most common causes of poor LCP in dashboards/analytics apps, because "chart libraries as hero content" is inherently anti-SSR unless deliberately engineered otherwise.
 
+## Flowchart
+```mermaid
+flowchart TD
+    A(["Page request"]) --> B{{"Chart rendered\nserver-side or client-only?"}}
+
+    B -- "Client-only" --> C["Send HTML shell"]
+    C --> D["Download JS bundle"]
+    D --> E["Hydrate"]
+    E --> F["Fetch chart data"]
+    F --> G["Compute layout"]
+    G --> H["Draw chart"]
+    H --> I(["LCP recorded late"])
+
+    B -- "Server-assisted" --> J["Server fetches data"]
+    J --> K["Render static SVG chart\n+ inline data in HTML"]
+    K --> L(["Browser paints real\nchart pixels — LCP recorded early"])
+    L --> M["Client JS hydrates\ninteractive chart island"]
+    M --> N(["No further LCP impact"])
+
+    classDef entry fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e;
+    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#713f12;
+    classDef action fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#1e293b;
+    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+    classDef danger fill:#fee2e2,stroke:#dc2626,stroke-width:1.5px,color:#7f1d1d;
+
+    class A entry;
+    class B decision;
+    class C,D,E,F,G,H,J,K,M action;
+    class L,N success;
+    class I danger;
+```
+
 ## Key Concepts
 - **LCP candidate:** the browser's largest visible element gets tracked as the LCP element — for a canvas/SVG chart, this is often the container element, and it only "counts" as painted once actual pixels are drawn, not just when the empty container exists.
 - **Critical path elimination:** every step between "page starts loading" and "chart pixels appear" (JS bundle, hydration, data fetch, computation, draw call) adds to LCP; each step removed or parallelized reduces it.

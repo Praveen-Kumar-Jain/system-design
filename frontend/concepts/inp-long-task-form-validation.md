@@ -10,6 +10,37 @@ How do you eliminate long tasks that negatively impact Interaction to Next Paint
 ## Why it matters
 INP measures the latency from a user interaction to the next frame the browser paints in response — not just one event handler's callback. A single "long task" (>50ms of blocking JS) inside a form's `onChange`/`onInput` handler directly increases INP because the browser cannot paint until that JS finishes. Since INP is a Core Web Vital, form-heavy pages (checkout, settings, complex multi-field forms) are especially vulnerable if validation is naively synchronous.
 
+## Flowchart
+```mermaid
+flowchart TD
+    A(["User types\nin form field"]) --> B["onChange /\noninput fires"]
+    B --> C{{"Validation is\ncheap or expensive?"}}
+
+    C -- "Cheap (format/required)" --> D["Run synchronously"]
+    D --> E(["Paint immediately —\nlow INP"])
+
+    C -- "Expensive (cross-field,\nschema, network)" --> F["Debounce\n(150-300ms)"]
+    F --> G{{"Needs DOM\naccess?"}}
+
+    G -- "Yes" --> H["Chunk work,\nscheduler.yield() between chunks"]
+    G -- "No" --> I["Offload to\nWeb Worker"]
+
+    H --> J["Validation result ready"]
+    I --> J
+    J --> K["Batch state update"]
+    K --> L(["Re-render with errors —\nmain thread stayed free"])
+
+    classDef entry fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e;
+    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#713f12;
+    classDef action fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#1e293b;
+    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+
+    class A entry;
+    class C,G decision;
+    class B,D,F,H,I,J,K action;
+    class E,L success;
+```
+
 ## Key Concepts
 - **Long task:** any task occupying the main thread for more than 50ms, which blocks input processing and rendering.
 - **Yielding:** deliberately breaking a long synchronous function into smaller pieces separated by points where the browser can process input/paint (`scheduler.yield()`, `setTimeout(fn, 0)`, `requestIdleCallback`).

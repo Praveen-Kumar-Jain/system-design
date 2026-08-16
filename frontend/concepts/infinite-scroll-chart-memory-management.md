@@ -10,6 +10,41 @@ What are the precise memory garbage collection challenges when implementing an i
 ## Why it matters
 JavaScript's Garbage Collector only reclaims an object once nothing references it. Event listeners, `setInterval`/`requestAnimationFrame` callbacks, closures, and long-lived React state are all reference holders that can keep an entire chart (and its dataset) alive long after it has scrolled out of view. GPU memory used by WebGL textures and framebuffers isn't tracked by the JS GC at all — it must be freed explicitly via `dispose()`/`destroy()`, or it leaks even while the JS heap looks fine.
 
+## Flowchart
+```mermaid
+flowchart TD
+    A(["User scrolls feed"]) --> B{{"Chart enters\nviewport?"}}
+
+    B -- "Yes" --> C["Fetch chart data"]
+    C --> D["Mount chart\n(Canvas/WebGL, listeners, timers)"]
+    D --> E(["Chart visible\n& interactive"])
+
+    B -- "No" --> F{{"Chart leaves\nviewport?"}}
+    E --> F
+
+    F -- "Yes" --> G["Destroy chart instance\n(destroy()/dispose())"]
+    G --> H["Remove event listeners"]
+    H --> I["Cancel timers / rAF"]
+    I --> J["Disconnect Resize/Intersection\nObservers"]
+    J --> K["Dispose Canvas / WebGL\nGPU resources"]
+    K --> L["Null out dataset references"]
+    L --> M(["Garbage Collector reclaims\nmemory — heap returns to baseline"])
+
+    F -- "No" --> N(["Remains mounted,\nmemory held"])
+
+    classDef entry fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e;
+    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#713f12;
+    classDef action fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#1e293b;
+    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+    classDef danger fill:#fee2e2,stroke:#dc2626,stroke-width:1.5px,color:#7f1d1d;
+
+    class A entry;
+    class B,F decision;
+    class C,D,G,H,I,J,K,L action;
+    class E,M success;
+    class N danger;
+```
+
 ## Key Concepts
 - **Detached DOM nodes:** removed from the document but still referenced by a listener or closure, so they and their subtree can't be collected.
 - **GPU memory is not GC'd:** WebGL textures, buffers, framebuffers, and shaders require explicit `dispose()`/`destroy()` calls from the chart library.

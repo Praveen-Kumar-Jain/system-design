@@ -10,6 +10,36 @@ How do you identify and prevent layout thrashing in a dynamic UI module handling
 ## Why it matters
 On a module rendering a massive dataset (a data grid, live-updating table, or streaming feed — "Project Big Potato" scale), even a millisecond of extra layout work per row compounds into hundreds of milliseconds of blocked main thread, directly causing dropped frames, jank during scroll/resize, and poor INP on interactions that trigger re-layout. Layout thrashing is one of the most common causes of this because it's invisible in the code — it only becomes visible as "Forced reflow" warnings in DevTools.
 
+## Flowchart
+```mermaid
+flowchart TD
+    A(["Render loop over\nN rows of dataset"]) --> B{{"Reads and writes\ninterleaved per row?"}}
+
+    B -- "Yes (thrashing)" --> C["Read row.offsetHeight"]
+    C --> D["Write row.style.top"]
+    D --> E["Forces synchronous\nlayout recalculation"]
+    E --> F{{"More rows?"}}
+    F -- "Yes" --> C
+    F -- "No" --> G(["N reflows —\nblocked main thread, jank"])
+
+    B -- "No (batched)" --> H["Read phase:\nmeasure all rows first"]
+    H --> I["Cache heights[] array"]
+    I --> J["Write phase:\napply transform: translateY()"]
+    J --> K(["Single layout pass —\nsmooth frame"])
+
+    classDef entry fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0c4a6e;
+    classDef decision fill:#fef9c3,stroke:#ca8a04,stroke-width:1.5px,color:#713f12;
+    classDef action fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#1e293b;
+    classDef success fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d;
+    classDef danger fill:#fee2e2,stroke:#dc2626,stroke-width:1.5px,color:#7f1d1d;
+
+    class A entry;
+    class B,F decision;
+    class C,D,E,H,I,J action;
+    class K success;
+    class G danger;
+```
+
 ## Key Concepts
 - **Forced synchronous layout (reflow):** occurs when JS reads a layout-dependent property (`offsetTop`, `getBoundingClientRect()`, `scrollHeight`, computed styles) right after writing to the DOM, forcing the browser to flush pending layout work immediately instead of batching it.
 - **Read/write batching:** grouping all measurement (read) operations together, then applying all mutation (write) operations together, so only one layout pass is needed total.
